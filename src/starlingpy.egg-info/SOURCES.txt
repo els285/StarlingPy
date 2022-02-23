@@ -1,0 +1,9 @@
+LICENSE
+README.md
+pyproject.toml
+setup.cfg
+setup.py
+src/starlingpy.egg-info/PKG-INFO
+src/starlingpy.egg-info/SOURCES.txt
+src/starlingpy.egg-info/dependency_links.txt
+src/starlingpy.egg-info/top_level.txt
