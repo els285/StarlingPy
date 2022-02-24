@@ -27,23 +27,7 @@ def balance_line(full_df):
     fig.show()
 
 
-def monthly_summary(df):
-    # Turn the date strings into datetime objects
 
-    #Split by month
-    g=df.groupby(pd.Grouper(key='transactionTime', freq='M'))
-    dfs = [group for _,group in g]
-
-
-    summary_list = []
-
-    for month in dfs:
-
-        Y=month['transactionTime'].tolist()[0].year
-        M=month['transactionTime'].tolist()[0].month
-
-        print(month['spendingCategory'].isin(['INCOME']))
-        input()
 
         # month['']
 

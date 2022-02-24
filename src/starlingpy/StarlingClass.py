@@ -19,7 +19,9 @@ class TransactionHistory:
     def __init__(self,Account,**kwargs):
 
         self.associated_Account = Account 
-        self.transaction_List   = Account.get_transactions(**kwargs)
+        output  =  Account.get_transactions(**kwargs)
+        self.start_date , self.end_date  =  output[0] , output[1]
+        self.transaction_List   = output[2]
         self.full_Dataframe     = self.generate_transaction_dataframe(**kwargs)
         self.summary_Dataframe  = self.summary_transaction_dataframe()
 
@@ -45,6 +47,7 @@ class TransactionHistory:
 
         Amounts_df=df["amount"].apply(pd.Series)
         dfN = pd.concat([Amounts_df,df["transactionTime"],df["spendingCategory"]],ignore_index=False,axis=1)
+        pd.to_numeric(dfN['minorUnits'],downcast='float')
         dfN.loc[dfN['spendingCategory'].isin(['INCOME']),'minorUnits'] = -dfN["minorUnits"]
 
         return dfN
@@ -65,6 +68,35 @@ class TransactionHistory:
         return running_balance
 
 
+    def discrete_time_summary(self,time_block):
+
+        # Get the range of times
+        rng = pd.date_range(self.start_date, self.end_date, freq=time_block)
+
+        # Split the summary_Dataframe by the time blcok
+        g=self.summary_Dataframe.groupby(pd.Grouper(key='transactionTime', freq=time_block))
+        dfs = [group for _,group in g]
+
+        summary_dict = {}
+
+        for i,T_df in enumerate(dfs):
+
+            if T_df.empty:
+                continue
+
+            m = T_df['spendingCategory'] != 'INCOME'
+            out_df, in_df = T_df[m], T_df[~m]
+
+            total_expend = out_df['minorUnits'].sum()/1e2
+            total_income = in_df['minorUnits'].sum()/1e2
+            if total_income < 0: total_income = -total_income
+
+            summary_dict[rng[i]] = {'outgoings': out_df , 'incomings': in_df, 'expenditure':  total_expend,'income':total_income} 
+        
+        return pd.DataFrame(summary_dict).T
+
+
+    
 
 
 
@@ -120,7 +152,7 @@ class StarlingAccount:
         start_date = kwargs["start_date"] if "start_date" in kwargs else (datetime.datetime.now()-datetime.timedelta(days=1)).strftime("%Y-%m-%d") + "T00:00:00Z"
         end_date   = kwargs["end_date"]   if "end_date"   in kwargs else datetime.datetime.now().strftime("%Y-%m-%d") + "T00:00:00Z"
         url =  BASE_PATH + Account_APIs["Transactions Between"].format(self.accountUid,self.defaultCategory,start_date,end_date)
-        return self.fetch(url)['feedItems']
+        return start_date,end_date,self.fetch(url)['feedItems']
 
 
 
