@@ -37,3 +37,8 @@ tH = TransactionHistory(Account,start_date="2021-02-17T00:00:00Z",end_date="2022
 ```
 The `TransactionHistory` object stores the full historical information in a dataframe, and also provides an abridged summary dataframe.
 
+TransactionHistory can also be accessed using the member function `generate_transaction_history`:
+```python3
+tH = Account.generate_transaction_history(start_date="2021-02-17T00:00:00Z",end_date="2022-02-24T00:00:00Z")
+```
+
